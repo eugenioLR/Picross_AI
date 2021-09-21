@@ -80,31 +80,31 @@ class Puzzle:
     def verify_map(self, map):
         return self.verify_rows(map) and self.verify_cols(map)
 
-    def still_works_vert(self, map):
+    def still_works_horiz(self, map):
         #the max number of black squares is lower than the hints maximum
         aux_hints = [[],[]]
         h, v = 0, 0
-        for i in range(len(map[0])):
-            aux_hints[1].append([])
-            for j in range(len(map)):
-                if map[j][i]:
-                    v += 1
-                elif v > 0:
-                    aux_hints[1][i].append(v)
-                    v = 0
-            if v > 0:
-                aux_hints[1][i].append(v)
-                v = 0
-            if len(aux_hints[1][i]) == 0:
-                aux_hints[1][i].append(0)
+        for i in range(self.height):
+            aux_hints[0].append([])
+            for j in range(self.width):
+                if map[i][j]:
+                    h += 1
+                elif h > 0:
+                    aux_hints[0][i].append(h)
+                    h = 0
+            if h > 0:
+                aux_hints[0][i].append(h)
+                h = 0
+            if len(aux_hints[0][i]) == 0:
+                aux_hints[0][i].append(0)
 
             count = 0
-            for j in range(len(aux_hints[1][i]) - 1):
+            for j in range(len(aux_hints[0][i]) - 1):
                 count += 1
-                if count >= len(self.hints[1][i]) or aux_hints[1][i][j] != self.hints[1][i][j]:
+                if count >= len(self.hints[0][i]) or aux_hints[0][i][j] != self.hints[0][i][j]:
                     return False
 
-            if aux_hints[1][i][-1] > self.hints[1][i][count]:
+            if aux_hints[1][i][-1] > self.hints[0][i][count]:
                 return False
         return True
 
@@ -193,18 +193,20 @@ class Puzzle:
         for i in solution:
             for j in i:
                 if j:
-                    print("■ ",end="")
-                else:
                     print("□ ",end="")
+                else:
+                    print("■ ",end="")
+
             print()
 
     def display_solution(self):
         for i in self.solution:
             for j in i:
                 if j:
-                    print("■ ",end="")
-                else:
                     print("□ ",end="")
+                else:
+                    print("■ ",end="")
+
             print()
 
     def n_row_perms(self, row_hints):
@@ -227,6 +229,7 @@ class Puzzle:
                     #polys.append(np.poly1d([1]*max_gap_len))
                 else:
                     #polys.append(np.poly1d([1]*(max_gap_len - 1) + [0]))
+                    pass
             solution = reduce(lambda x, y: x*y, polys)[m - s]
         elif m == s + len(row_hints) - 1:
             solution = 1
