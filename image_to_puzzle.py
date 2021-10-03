@@ -2,10 +2,11 @@ from bitmap_image import *
 from PIL import Image
 
 def ask_for_puzzle():
-    path = ""
+    return get_puzzle(input("Image path:"))
+
+def get_puzzle(path):
     result = None
     try:
-        path = input("Image path:")
         im = Image.open(path)
         px = im.load()
         bitmap = []
@@ -17,3 +18,8 @@ def ask_for_puzzle():
     except:
         print("does not exist, sorry")
     return result
+
+
+if __name__ == '__main__':
+    z = get_puzzle("magnemite.png")
+    z.solve()
