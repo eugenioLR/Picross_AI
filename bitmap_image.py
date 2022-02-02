@@ -7,14 +7,14 @@ class Puzzle:
     def __init__(self, bitmap):
         self.hints = [[],[]]
         self.solution = bitmap
-        self.height = len(bitmap)
-        self.width = len(bitmap[0])
-        self.flipState = False
+        self.height = bitmap.shape[0]
+        self.width = bitmap.shape[1]
+        self.swapState = False
         h, v = 0, 0
         for i in range(self.height):
             self.hints[0].append([])
             for j in range(self.width):
-                if bitmap[i][j]:
+                if bitmap[i, j] == 1:
                     h += 1
                 elif h > 0:
                     self.hints[0][i].append(h)
@@ -28,7 +28,7 @@ class Puzzle:
         for i in range(self.width):
             self.hints[1].append([])
             for j in range(self.height):
-                if bitmap[j][i]:
+                if bitmap[j, i] == 1:
                     v += 1
                 elif v > 0:
                     self.hints[1][i].append(v)
@@ -38,251 +38,246 @@ class Puzzle:
                 v = 0
             if len(self.hints[1][i]) == 0:
                 self.hints[1][i].append(0)
+        #print(bitmap)
+        #print(self.hints)
 
     def verify_rows(self, map):
-        aux_hints = []
-        h = 0
-        for i in range(len(map)):
-            aux_hints.append([])
-            for j in range(len(map[0])):
-                if map[i][j]:
-                    h += 1
-                elif h > 0:
-                    aux_hints[i].append(h)
-                    h = 0
+        verifiable = True
+        i = 0
 
-            if h > 0:
-                aux_hints[i].append(h)
-                h = 0
+        while i < self.height and verifiable:
+            j_aux = 0
+            j_hint = 0
+            j = 0
+            while j < self.width and verifiable:
+                if map[i, j] == 1:
+                    j_aux += 1
+                elif j_aux > 0:
+                    verifiable = j_hint < len(self.hints[0][i]) and j_aux == self.hints[0][i][j_hint]
+                    j_aux = 0
+                    j_hint += 1
+                j += 1
 
-            if len(aux_hints[i]) == 0:
-                aux_hints[i].append(0)
-
-            if aux_hints[i] != self.hints[0][i]:
-                return False
-
-        return True
+            if j_hint == 0:
+                verifiable = j_hint < len(self.hints[0][i]) and j_aux == self.hints[0][i][j_hint]
+            i += 1
+        return verifiable
 
     def verify_cols(self, map):
-        aux_hints = []
-        v = 0
-        for i in range(len(map[0])):
-            aux_hints.append([])
-            for j in range(len(map)):
-                if map[j][i]:
-                    v += 1
-                elif v > 0:
-                    aux_hints[i].append(v)
-                    v = 0
-
-            if v > 0:
-                aux_hints[i].append(v)
-                v = 0
-
-            if len(aux_hints[i]) == 0:
-                aux_hints[i].append(0)
-
-            if aux_hints[i] != self.hints[1][i]:
-                return False
-
-        return True
+        verifiable = True
+        i = 0
+        while i < self.width and verifiable:
+            j_aux = 0
+            j_hint = 0
+            j = 0
+            while j < self.height and verifiable:
+                if map[j, i] == 1:
+                    j_aux += 1
+                elif j_aux > 0:
+                    verifiable = j_hint < len(self.hints[1][i]) and j_aux == self.hints[1][i][j_hint]
+                    j_aux = 0
+                    j_hint += 1
+                j += 1
+            if j_hint == 0:
+                verifiable = j_hint < len(self.hints[1][i]) and j_aux == self.hints[1][i][j_hint]
+            i += 1
+        return verifiable
 
     def verify_map(self, map):
         return self.verify_rows(map) and self.verify_cols(map)
 
     def still_works_horiz(self, map):
-        # The max number of black squares is lower than the hints maximum
-        aux_hints = [[],[]]
-        h, v = 0, 0
-        for i in range(self.height):
-
-            # Count and verify the partial solution with the hints
+        verifiable = True
+        i = 0
+        while i < self.height and verifiable:
+            j_aux = 0
             j_hint = 0
-            aux = 0
-            for j in range(self.width):
-                if map[i][j]:
-                    aux += 1
+            last_j = 0
+            j = 0
+            skip_row = False
+            while j < self.width and verifiable and not skip_row:
+                if map[i, j] == -1:
+                    skip_row = True
+                    if j_hint == len(self.hints[0][i]):
+                        verifiable = last_j == self.hints[0][i][j_hint-1]
+                    elif j_hint < len(self.hints[0][i]):
+                        verifiable = j_aux <= self.hints[0][i][j_hint]
+                    else:
+                        verifiable = False
                 else:
-                    if aux > 0 or j_hint > len(aux_hints[0]) or aux != aux_hints[0][i]:
-                        return False
-                    aux = 0
-                    j_hint += 1
-
-            """
-            aux_hints[0].append([])
-            for j in range(self.width):
-                if map[i][j]:
-                    h += 1
-                elif h > 0:
-                    aux_hints[0][i].append(h)
-                    h = 0
-            if h > 0:
-                aux_hints[0][i].append(h)
-                h = 0
-            if len(aux_hints[0][i]) == 0:
-                aux_hints[0][i].append(0)
-
-            count = 0
-            for j in range(len(aux_hints[0][i]) - 1):
-                count += 1
-                if count >= len(self.hints[0][i]) or aux_hints[0][i][j] != self.hints[0][i][j]:
-                    return False
-
-            if aux_hints[1][i][-1] > self.hints[0][i][count]:
-                return False
-            """
-        return True
+                    if map[i, j]:
+                        j_aux += 1
+                    elif j_aux > 0:
+                        verifiable = j_hint < len(self.hints[0][i]) and j_aux <= self.hints[0][i][j_hint]
+                        last_j = j_aux
+                        j_aux = 0
+                        j_hint += 1
+                j += 1
+            i += 1
+        return verifiable
 
     def still_works_vert(self, map):
-        #the max number of black squares is lower than the hints maximum
-        aux_hints = []
-        v = 0
-        for i in range(len(map[0])):
-            aux_hints.append([])
-            for j in range(len(map)):
-                if map[j][i]:
-                    v += 1
-                elif v > 0:
-                    aux_hints[i].append(v)
-                    v = 0
-            if v > 0:
-                aux_hints[i].append(v)
-                v = 0
-            if len(aux_hints[i]) == 0:
-                aux_hints[i].append(0)
-
-            count = 0
-            for j in range(len(aux_hints[i]) - 1):
-                count += 1
-                if count >= len(self.hints[1][i]) or aux_hints[i][j] != self.hints[1][i][j]:
-                    return False
-
-            if aux_hints[i][-1] > self.hints[1][i][count]:
-                return False
-        return True
+        verifiable = True
+        i = 0
+        while i < self.width and verifiable:
+            j_aux = 0
+            j_hint = 0
+            last_j = 0
+            j = 0
+            skip_row = False
+            while j < self.height and verifiable and not skip_row:
+                if map[j, i] == -1:
+                    skip_row = True
+                    if j_hint == len(self.hints[1][i]):
+                        verifiable = last_j == self.hints[1][i][j_hint-1]
+                    elif j_hint < len(self.hints[1][i]):
+                        verifiable = j_aux <= self.hints[1][i][j_hint]
+                    else:
+                        verifiable = False
+                else:
+                    if map[j, i]:
+                        j_aux += 1
+                    elif j_aux > 0:
+                        verifiable = j_hint < len(self.hints[1][i]) and j_aux <= self.hints[1][i][j_hint]
+                        last_j = j_aux
+                        j_aux = 0
+                        j_hint += 1
+                j += 1
+            i += 1
+        return verifiable
 
     def solve_naive_backtrack(self):
-        base_map = [[False]*self.width for i in range(self.height)]
-        solved_map = [[None]*self.width for i in range(self.height)]
-        self.__naive_backtrack(base_map, solved_map, len(base_map), len(base_map[0]))
-        if solved_map[0][0] == None:
-            print("no solution")
-            solved_map = None
-
-        return solved_map
-
-    def __naive_backtrack(self, bitmap, solved_map, max_y, max_x, y = 0, x = 0):
-        if solved_map[0][0] == None:
-            if self.verify_map(bitmap):
-                for i in range(len(bitmap)):
-                    for j in range(self.width):
-                        solved_map[i][j] = bitmap[i][j]
-            elif y < max_y:
-                aux = bitmap[y][x]
-                for i in [True, False]:
-                    bitmap[y][x] = i
-                    next_x = (x + 1) % max_x
-                    next_y = y
-                    if next_x == 0:
-                        next_y += 1
-                    self.__naive_backtrack(bitmap, solved_map, max_y, max_x, next_y, next_x)
-                bitmap[y][x] = aux
-
-
-    #idea, fusion, get common squares for all combinations of each row and fill the gaps with square by square backtracking
-    def solve_perm_backtrack(self, progress = None):
-
-        solved_map = [[None]*self.width for i in range(self.height)]
-        base_map = [[False]*self.width for i in range(self.height)]
-        if progress is None:
-            progress = [[None]*self.width for i in range(self.height)]
-
-        self.__perm_backtrack(base_map, solved_map, progress, len(base_map))
-
-        if solved_map[0][0] == None:
+        base_map = np.zeros([self.height, self.width], dtype=np.byte)
+        solved_map = [-np.ones([self.height, self.width], dtype=np.byte)]
+        self.__naive_backtrack(base_map, solved_map, base_map.shape[0], base_map.shape[1])
+        if solved_map[0][0, 0] == -1:
             print()
             print("No solution found.")
-            solved_map = None
+            solved_map[0] = None
         else:
             print()
             print("Solution found.")
 
+        return solved_map[0]
 
-
-        return solved_map
-
-    def __perm_backtrack(self, bitmap, solved_map, progress, max_i, i = 0):
-        if solved_map[0][0] is None:
+    def __naive_backtrack(self, bitmap, solved_map, max_y, max_x, y = 0, x = 0):
+        if solved_map[0][0, 0] == -1:
             if self.verify_map(bitmap):
-                for j in range(self.height):
-                    for k in range(self.width):
-                        solved_map[j][k] = bitmap[j][k]
+                print("we are done", self.verify_map(bitmap))
+                print(bitmap)
+                solved_map[0] = np.copy(bitmap)
+            elif y < max_y:
+                aux = bitmap[y, x]
+                for i in [True, False]:
+                    bitmap[y, x] = i
+                    self.__naive_backtrack(bitmap, solved_map, max_y, max_x, y + ((x + 1) // max_x), (x + 1) % max_x)
+                bitmap[y, x] = aux
 
-            elif i < max_i and self.still_works_vert(bitmap):
-                aux = bitmap[i].copy()
-                for j in self.line_perms(self.hints[0][i], progress[i], isHoriz = True):
-                    bitmap[i] = j
-                    self.__perm_backtrack(bitmap, solved_map, progress, max_i, i+1)
-                bitmap[i] = aux
+
+    #idea, fusion, get common squares for all combinations of each row and fill the gaps with square by square backtracking
+    def solve_perm_backtrack(self, progress = None):
+        base_map = np.zeros([self.height, self.width], dtype=np.byte)
+        solved_map = [-np.ones([self.height, self.width], dtype=np.byte)]
+
+        if progress is None:
+            progress = -np.ones([self.height, self.width], dtype=np.byte)
+
+        self.__perm_backtrack(base_map, solved_map, progress, len(base_map))
+
+        if solved_map[0][0, 0] == -1:
+            print()
+            print("No solution found.")
+            solved_map[0] = None
+        else:
+            print()
+            print("Solution found.")
+
+        return solved_map[0]
+
+    def __perm_backtrack(self, bitmap, solved_map, progress, max_row, row = 0):
+        if solved_map[0][0, 0] == -1:
+            if self.verify_map(bitmap):
+                solved_map[0] = np.copy(bitmap)
+            elif row < max_row and self.still_works_vert(bitmap):
+                aux = np.copy(bitmap[row, :])
+                for j in self.line_perms(self.hints[0][row], progress[row, :], isHoriz = True):
+                    bitmap[row, :] = j
+                    self.__perm_backtrack(bitmap, solved_map, progress, max_row, row+1)
+                bitmap[row, :] = aux
 
     def solve(self):
+        self.display_solution()
 
         # Preprocess the puzzle to solve it parcialy
         progress = self.preprocess(100)
+        self.display_solution(progress)
 
-        if self.flipState:
-            self.flip()
-            progress = np.transpose(progress)
-
-        # Decide if fliping the puzzle will result in a simpler problem
-        horiz_cost = 1.0
-        for i in range(len(self.hints[0])):
-            horiz_cost *= len(self.line_perms(self.hints[0][i], progress[i], isHoriz = True))
-
-        progress_t = np.transpose(progress)
-        vert_cost = 1.0
-        for i in range(len(self.hints[1])):
-            vert_cost *= len(self.line_perms(self.hints[1][i], progress_t[i], isHoriz = False))
-
-        print("horiz: {:e}".format(horiz_cost), "vert: {:e}".format(vert_cost))
+        if self.swapState:
+            self.swap_axis()
+            progress = progress.T
 
         print("partial solution")
         self.display_solution(progress)
 
+
+
+        # Decide if swaping the puzzle will result in a simpler problem
+        horiz_cost = 1.0
+        for i in range(len(self.hints[0])):
+            horiz_cost *= len(self.line_perms(self.hints[0][i], progress[:, i], isHoriz = True))
+
+        progress_t = progress.T
+        vert_cost = 1.0
+        for i in range(len(self.hints[1])):
+            vert_cost *= len(self.line_perms(self.hints[1][i], progress_t[:, i], isHoriz = False))
+
+        print("horiz: {:e}".format(horiz_cost), "vert: {:e}".format(vert_cost))
+
         if(vert_cost < horiz_cost):
-            self.flip()
-            progress = np.transpose(progress)
+            self.swap_axis()
+            progress = progress.T
 
         # Solve the puzzle
-        solution = self.solve_perm_backtrack(progress);
+        solution = self.solve_perm_backtrack();
+        #solution = self.solve_naive_backtrack();
 
         # Restore the puzzle
         if(vert_cost < horiz_cost):
-            self.flip()
-            solution = np.transpose(solution)
+            self.swap_axis()
+            solution = solution.T
 
         # Display the puzzle
         self.display_solution(solution)
 
     def preprocess(self, times = 1, progress = None):
-        self.flip()
+        self.swap_axis()
 
-        pre_solution = []
+        #print("prerpocessing nº", times)
+
+        pre_solution = np.zeros([self.width, self.height])
 
         for i in range(self.height):
+            print(i)
             if progress is None:
-                pre_solution.append(self.common_from_perms(self.line_perms(self.hints[0][i])))
+                #print("permutations", self.line_perms(self.hints[0][i]))
+                pre_solution[:,i] = self.common_from_perms(self.line_perms(self.hints[0][i]))
             else:
-                pre_solution.append(self.common_from_perms(self.line_perms(self.hints[0][i], progress[i])))
+                #print("permutations", self.line_perms(self.hints[0][i], progress[:,i]))
+                pre_solution[:,i] = self.common_from_perms(self.line_perms(self.hints[0][i], progress[:,i]))
 
-        if times > 1 and not np.array_equal(progress, pre_solution) and not self.verify_map(pre_solution):
-            pre_solution = self.preprocess(times-1, np.transpose(pre_solution))
+        if times > 1 and not np.all(progress == pre_solution) and not self.verify_map(pre_solution.T):
+            print("partial solution:")
+            if times%2 == 0:
+                self.display_solution(pre_solution)
+            else:
+                self.display_solution(pre_solution.T)
+            pre_solution = self.preprocess(times-1, pre_solution.T)
 
         return pre_solution
 
 
-    def flip(self):
-        self.flipState = not self.flipState
+    def swap_axis(self):
+        self.swapState = not self.swapState
         self.hints[0], self.hints[1] = self.hints[1], self.hints[0]
         self.height, self.width = self.width, self.height
 
@@ -291,15 +286,11 @@ class Puzzle:
             print("preview of the solution")
             solution = self.solution
 
+        display_map = {-1:"_ ", 0:"□ ", 1:"■ "}
+
         for i in solution:
             for j in i:
-                if j is None:
-                    print("_ ",end="")
-                elif j:
-                    print("□ ",end="")
-                else:
-                    print("■ ",end="")
-
+                print(display_map[j], end="")
             print()
 
     def n_line_perms(self, row_hints, isHoriz = True):
@@ -323,36 +314,41 @@ class Puzzle:
 
         return solution
 
-    def line_perms(self, line_hints, progress = [], isHoriz = True):
+    def line_perms(self, line_hints, progress = None, isHoriz = True):
         m = self.width if isHoriz else self.height
         s = sum(line_hints)
         hint_length = len(line_hints)
 
-        if len(progress) == 0:
-            progress = [None] * m
+        if progress is None:
+            progress = -np.ones(m)
 
+        #line_sols = np.zeros([m, hint_length])
         line_sols = []
         if m > s + hint_length - 1:
             i = 0
-            #gap_lengths is the posible gap positions
+            # gap_lengths is the posible gap positions
             gap_lengths = zero_pad_partitions(partitions_limited_count(m - s, hint_length - 1, hint_length + 1), hint_length + 1)
+            #print("gap lengths:", gap_lengths)
             for gap_option in gap_lengths:
-                aux_line = []
+                aux_line = np.zeros(m)
+                cursor = 0
                 for i in range(hint_length):
-                    aux_line += [False] * gap_option[i]
-                    aux_line += [True] * line_hints[i]
-                aux_line += [False] * gap_option[hint_length]
-                valid = all([y is None or x == y for x, y in zip(aux_line, progress)])
+                    cursor += gap_option[i]
+                    aux_line[cursor:cursor+line_hints[i]] = 1
+                    cursor += line_hints[i]
+
+                valid = np.all(np.logical_or(progress == -1, np.equal(aux_line, progress)))
                 if valid:
                     line_sols.append(aux_line)
 
 
         elif m == s + hint_length - 1:
-            line_sols.append([])
-            line_sols[0] += [True] * line_hints[0]
+            row = np.ones(m)
+            cursor = line_hints[0]
             for i in line_hints[1:]:
-                line_sols[0].append(False)
-                line_sols[0] += [True] * i
+                row[cursor] = 0
+                cursor += i + 1
+            line_sols.append(row)
 
         return line_sols
 
@@ -364,79 +360,20 @@ class Puzzle:
         while i < len(permutations) and not finish:
             j = 0
             while j < l:
-                if not aux[j] is None and permutations[i][j] != aux[j]:
-                    aux[j] = None
+                if aux[j] != -1 and permutations[i][j] != aux[j]:
+                    aux[j] = -1
                 j += 1
-            finish = list(aux).count(None) == len(aux)
+            finish = np.count_nonzero(aux == -1) == len(aux)
             i += 1
         return aux
 
+def generate_bitmap(size, p):
+    return (np.random.uniform(0, 1, size) < p).astype(np.byte)
+
 def generate_puzzle(size, p):
-    bitmap = []
-    for i in range(size):
-        bitmap.append([])
-        for j in range(size):
-            bitmap[i].append(random.random() < p)
-    return bitmap
+    return Puzzle(generate_bitmap(size, p))
 
-
-T = True
-F = False
-
-bitmapHard = [
-    [F, F, T, T, T, F, F, T, F, F, T, T, F, F, F],
-    [F, T, T, F, T, F, F, T, T, F, F, T, F, T, F],
-    [T, F, F, T, T, T, T, T, F, T, T, T, F, F, T],
-    [T, T, T, T, T, T, T, T, T, T, T, T, F, F, T],
-    [T, F, T, T, F, F, F, F, T, F, F, F, F, F, F],
-    [F, T, F, F, F, T, T, T, F, T, F, F, T, F, T],
-    [F, T, T, T, F, F, T, F, T, T, F, T, F, T, T],
-    [F, T, F, F, F, F, T, F, T, F, T, T, F, T, T],
-    [T, T, T, T, F, F, F, F, F, F, T, T, T, T, T],
-    [F, F, T, F, F, T, F, F, F, F, T, F, T, F, T],
-    [F, F, F, T, F, T, T, F, T, F, T, F, T, T, T],
-    [T, F, T, T, F, F, T, T, F, F, F, T, F, F, F],
-    [T, F, T, T, F, F, T, F, F, F, F, F, F, F, T],
-    [T, F, T, T, F, F, T, T, F, T, T, F, T, T, T],
-    [T, T, T, F, F, T, F, F, T, T, F, F, T, F, T]
-]
-
-
-bitmap0 = [
-    [T, F, T, F, T, F, F, T],
-    [F, T, F, F, T, F, F, T],
-    [F, T, F, T, T, F, F, T],
-    [F, T, F, F, T, F, F, T],
-    [T, T, F, F, T, F, F, T],
-    [F, T, F, F, T, F, F, T],
-    [F, T, F, T, T, F, F, T],
-    [F, T, F, F, T, F, F, T],
-    [F, T, F, T, T, F, F, T],
-    [F, T, F, F, T, F, F, T],
-    [F, T, F, T, T, F, F, T]
-]
-
-bitmap1 = [
-    [T, F, T, F, T],
-    [F, T, F, F, T],
-    [F, T, F, T, T],
-    [F, T, F, F, T],
-    [T, T, F, F, T],
-    [F, T, F, F, T]
-]
-
-bitmap2 = [
-    [T, F, T, F, T],
-    [F, T, F, F, F],
-    [F, T, F, F, T]
-]
-
-bitmap3 = [
-    [T, F, T, F, T],
-    [F, T, F, T, F],
-    [F, T, F, T, F]
-]
 
 if __name__ == '__main__':
-    z = Puzzle(generate_puzzle(20, 0.5))
+    z = generate_puzzle([5, 2], 0.5)
     z.solve();

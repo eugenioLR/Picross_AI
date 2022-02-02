@@ -21,6 +21,7 @@ def partitions_limited_count(n, min_elems, max_elems):
 
 def zero_pad_partitions(partitions, length):
     solution = []
+    #print("partitions:", partitions)
     for i in partitions:
         if len(i) == length:
             solution.append(i)
