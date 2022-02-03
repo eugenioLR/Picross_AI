@@ -134,7 +134,6 @@ class Test1(unittest.TestCase):
 
         self.assertFalse(p.verify_map(bm2))
         self.assertFalse(p.verify_map(bm3))
-        print(bm4)
         self.assertFalse(p.verify_map(bm4))
 
     def test_puzzle_still_valid(self):

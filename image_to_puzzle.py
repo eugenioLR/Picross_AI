@@ -8,12 +8,12 @@ def ask_for_puzzle():
 def get_puzzle(path):
     result = None
     im = ImageOps.grayscale(Image.open(path))
-    bitmap = np.round(np.asarray(im))
+    bitmap = (np.asarray(im) == 0).astype(np.byte)
     result = Puzzle(bitmap)
     return result
 
 
 if __name__ == '__main__':
-    z = get_puzzle("magnemite.png")
-    #z = ask_for_puzzle()
+    #z = get_puzzle("magnemite.png")
+    z = ask_for_puzzle()
     z.solve()
