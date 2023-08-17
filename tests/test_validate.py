@@ -7,49 +7,52 @@ N = -1
 
 def test_puzzle_verify():
     bm1 = [
-        [F, F, F, F, F],
-        [T, F, F, F, F],
-        [F, T, F, F, F],
-        [F, F, T, F, F],
-        [F, F, F, T, F],
-        [F, F, F, F, T],
-        [T, T, F, F, F],
-        [T, F, T, F, F],
-        [T, F, F, T, F],
-        [T, F, F, F, T],
-        [F, T, T, F, F],
-        [F, T, F, T, F],
-        [F, T, F, F, T],
-        [F, F, T, T, F],
-        [F, F, T, F, T],
-        [F, F, F, T, T],
-        [T, T, T, F, F],
-        [T, T, F, T, F],
-        [T, T, F, F, T],
-        [T, F, T, T, F],
-        [T, F, T, F, T],
-        [F, T, T, T, F],
-        [F, T, T, F, T],
-        [F, F, T, T, T],
-        [T, T, T, T, F],
-        [T, T, T, F, T],
-        [T, T, F, T, T],
-        [F, T, T, T, T],
+        [F, F, F, F],
+        [T, T, F, F],
+        [T, F, T, F],
+        [T, T, F, F],
+        [F, F, F, F]
     ]
     bm1 = np.array(bm1)
 
+    bm2 = [
+        [F, F, F, F],
+        [T, T, F, F],
+        [T, F, F, T],
+        [T, T, F, F],
+        [F, F, F, F]
+    ]
+    bm2 = np.array(bm2)
+
+    bm3 = [
+        [F, F, F, F],
+        [T, T, F, F],
+        [T, F, T, F],
+        [T, F, F, F],
+        [F, T, F, F]
+    ]
+    bm3 = np.array(bm3)
+
+    bm4 = [
+        [F, F, F, F],
+        [F, F, F, F],
+        [F, F, F, F],
+        [F, F, F, F],
+        [F, F, F, F]
+    ]
+    bm4 = np.array(bm4)
+
     p = PicrossPuzzle.from_bitmap(bm1)
+    assert p.verify_rows(bm1)
+    assert p.verify_cols(bm1)
+    assert p.verify_solution(bm1)
 
-    assert p.verify_rows(bm1) # True
-    assert p.verify_cols(bm1) # True
-    assert p.verify_solution(bm1) # True
+    assert p.verify_rows(bm2)
+    assert p.verify_cols(bm3)
 
-    assert p.verify_rows(bm2) # True
-    assert p.verify_cols(bm3) # True
-
-    assert not p.verify_solution(bm2) # False
-    assert not p.verify_solution(bm3) # False
-    assert not p.verify_solution(bm4) # False
+    assert not p.verify_solution(bm2)
+    assert not p.verify_solution(bm3)
+    assert not p.verify_solution(bm4)
 
 
 def test_puzzle_still_valid():
