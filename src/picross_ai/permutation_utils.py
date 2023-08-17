@@ -2,7 +2,7 @@ from __future__ import annotations
 import numpy as np
 
 import sys
-sys.setrecursionlimit(1000000)
+sys.setrecursionlimit(100000)
 
 def list_replace(original: List, target: List, value: List) -> List:
     """
@@ -99,26 +99,24 @@ def partitions_limited_count_iter(n, min_elems, max_elems, solution):
                     call_stack.append((n - i, min_elems-1, max_elems-1, solution, part_solution + [i]))
             elif n == 0 and min_elems <= 0:
                 solution.append(part_solution)
-    
-
 
 def partitions(n):
     """
-    Obtains all the integer partitions of `n`.
+    Obtains all the ordered integer partitions of `n`.
     """
 
     return partitions_limited_count(n, 0, n)
 
 def partitions_fixed_count(n, elem):
     """
-    Obtains all the integer partitions of `n` with `elem` elements.
+    Obtains all the ordered integer partitions of `n` with `elem` elements.
     """
 
     return partitions_limited_count(n,elem,elem)
 
 def partitions_limited_count(n, min_elems, max_elems):
     """
-    Obtains all the integer partitions of `n` with more than `min_elem` elements and less than `max_elems`.
+    Obtains all the ordered integer partitions of `n` with more than `min_elem` elements and less than `max_elems`.
     """
 
     solution = []
@@ -176,7 +174,7 @@ def line_perms(width, height, line_hints, progress = None, isHoriz = True):
     hint_length = len(line_hints)
 
     if progress is None:
-        progress = -np.ones(m)
+        progress = np.full(m, -1)
 
     line_sols = []
     if m > s + hint_length - 1:

@@ -219,19 +219,3 @@ def display_solution(solution):
         for j in i:
             print(display_map[j], end="")
         print()
-
-# def generate_bitmap(size, p):
-#     return (np.random.uniform(0, 1, size) < p).astype(int)
-
-# if __name__ == '__main__':
-#     z = PicrossPuzzle.from_txt("txtTests/test1.txt")
-#     print(z.hints)
-#     print()
-
-#     z = PicrossPuzzle.from_bitmap(generate_bitmap([20, 20], 0.01))
-#     print(z.hints)
-#     print()
-
-#     z = PicrossPuzzle.from_image("imgTests/mario_duck.png")
-#     print(z.hints)
-#     print()
