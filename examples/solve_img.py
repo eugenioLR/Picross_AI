@@ -4,7 +4,7 @@ import time
 from picross_ai import PicrossPuzzle
 from picross_ai import *
 
-def run_solver(puzzle, solver = "partial", boosted = False, transposed=False, boost_depth = 100):
+def run_solver(puzzle, solver = "partial", boosted = False, transposed = False, boost_depth = 100):
     time_spent = 0
 
     progress = None
@@ -21,19 +21,19 @@ def run_solver(puzzle, solver = "partial", boosted = False, transposed=False, bo
     
     if solver == "backtrack":
         time_start = time.process_time()
-        solution = solve_naive_backtrack(puzzle, progress)
+        solution = solve_naive_backtrack(puzzle, progress, verbose=True)
         time_end = time.process_time()
         time_spent = time_end - time_start
     
     elif solver == "random_backtrack":
         time_start = time.process_time()
-        solution = solve_random_backtrack(puzzle, progress)
+        solution = solve_random_backtrack(puzzle, progress, verbose=True)
         time_end = time.process_time()
         time_spent = time_end - time_start
     
     elif solver == "row_backtrack":
         time_start = time.process_time()
-        solution = solve_row_backtrack(puzzle, progress)
+        solution = solve_row_backtrack(puzzle, progress, verbose=True)
         time_end = time.process_time()
         time_spent = time_end - time_start
     
@@ -48,7 +48,7 @@ def run_solver(puzzle, solver = "partial", boosted = False, transposed=False, bo
     if transposed:
         puzzle.transpose()
         solution = solution.T
-
+    
     display_solution(solution)
     
     print(f"Solution verification: {'Ok' if puzzle.verify_solution(solution) else 'Incorrect'}")

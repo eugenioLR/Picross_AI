@@ -6,7 +6,7 @@ from functools import reduce
 from ..permutation_utils import *
 from ..PicrossPuzzle import PicrossPuzzle, display_solution
 
-def solve_naive_backtrack(puzzle: PicrossPuzzle, progress = None) -> PicrossPuzzle:
+def solve_naive_backtrack(puzzle: PicrossPuzzle, progress = None, verbose = False) -> PicrossPuzzle:
     """
     Calls the recursive naive backtracking solver and returns the solution.
     """
@@ -30,10 +30,11 @@ def solve_naive_backtrack(puzzle: PicrossPuzzle, progress = None) -> PicrossPuzz
         else:
             n_cells = np.count_nonzero(progress == -1)
 
-        print(f"Estimation of complexity:")
-        print(f"- Number of cells {n_cells}")
-        print(f"- Total number of combinations {2**n_cells} = {2**n_cells:e}")
-        print()
+        if verbose:
+            print(f"Estimation of complexity:")
+            print(f"- Number of cells {n_cells}")
+            print(f"- Total number of combinations {2**n_cells} = {2**n_cells:e}")
+            print()
         
         _naive_backtrack_rec(puzzle, base_map, solved_map, puzzle.height, puzzle.width)
 
