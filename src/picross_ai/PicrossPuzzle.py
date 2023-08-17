@@ -197,20 +197,22 @@ class PicrossPuzzle:
     
     @staticmethod
     def from_txt(file_path: str) -> PicrossPuzzle:
-        hints = PicrossPuzzle._hints_from_file(file_path)
-        return PicrossPuzzle(hints)
+        hints = []
 
-    @staticmethod
-    def _hints_from_file(file_path: str) -> List[List[int]]:
-        result = []
         with open(file_path, "r") as hint_file:
-            file_contents = hint_file.read().replace(" ", "")[:-1]
+            file_contents = hint_file.read().replace(" ", "")
+
+            if file_contents[-1] == "\n":
+                file_contents = file_contents[:-1]
+
             for row in file_contents.split("\n"):
-                result.append([])
+                hints.append([])
                 for elem in row.split(";"):
                     hint = [int(i) for i in elem.split(",")]
-                    result[-1].append(hint)
-        return result
+                    hints[-1].append(hint)
+        
+        return PicrossPuzzle(hints)
+        
 
 def display_solution(solution):
     display_map = {-1:"_ ", 0:"■ ", 1:"□ "}

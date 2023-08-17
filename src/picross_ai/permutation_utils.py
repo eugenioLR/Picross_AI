@@ -190,7 +190,7 @@ def line_perms(width, height, line_hints, progress = None, isHoriz = True):
                 aux_line[cursor:cursor+line_hints[i]] = 1
                 cursor += line_hints[i]
 
-            if np.all(np.logical_or(progress == -1, np.equal(aux_line, progress))):
+            if np.all((progress == -1) | (progress == aux_line)):
                 yield aux_line
 
 
@@ -217,7 +217,7 @@ def common_from_perms(perm_gen: Iterator) -> List:
     while i < len(permutations) and not finish:
         j = 0
         while j < l:
-            if aux[j] != -1 and permutations[i][j] != aux[j]:
+            if permutations[i][j] != aux[j]:
                 aux[j] = -1
             j += 1
         finish = np.count_nonzero(aux == -1) == len(aux)

@@ -28,6 +28,7 @@ def solve_row_backtrack(puzzle: PicrossPuzzle, progress: np.ndarray = None, verb
         row_costs = np.zeros(puzzle.height).astype(int)
         for i in range(puzzle.height):
             row_costs[i] = n_line_perms(puzzle.width, puzzle.height, puzzle.hints[0][i], progress[i, :])
+        
         row_order = row_costs.argsort()
 
         n_possibilities = reduce(lambda x, y: int(x)*int(y), row_costs)
@@ -64,7 +65,8 @@ def _row_backtrack_rec(puzzle: PicrossPuzzle, bitmap: np.ndarray, solved_map: np
 
     row = row_order[0]
     aux = bitmap[row, :].copy()
-    for perm in line_perms(puzzle.width, puzzle.height, puzzle.hints[0][row], progress[row, :]):
+    possibilities = list(line_perms(puzzle.width, puzzle.height, puzzle.hints[0][row], progress[row, :]))
+    for perm in possibilities:
         bitmap[row, :] = perm
         _row_backtrack_rec(puzzle, bitmap, solved_map, progress, row_order[1:])
     bitmap[row, :] = aux
