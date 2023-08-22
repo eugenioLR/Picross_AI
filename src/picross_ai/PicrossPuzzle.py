@@ -6,6 +6,12 @@ from PIL import Image, ImageOps
 import random
 
 class PicrossPuzzle:
+    """
+    Class that holds the hints of a picross (or nonogram) puzzle.
+
+    It also provides functions to verify solutions.
+    """
+
     def __init__(self, hints: List[List[int]]):
         self.hints = hints
         self.height = len(hints[0])
@@ -14,7 +20,7 @@ class PicrossPuzzle:
     
     def transpose(self):
         """
-        Transposes the puzzle.
+        Transposes the puzzle, swaps vertical hints and horizontal hints.
         """
         
         self.transposed = not self.transposed
@@ -23,7 +29,7 @@ class PicrossPuzzle:
 
     def verify_rows(self, solution: np.npndarray) -> bool:
         """
-        Checks if the row restrictions of the puzzle are satisfied
+        Checks if the row restrictions of the puzzle are satisfied.
         """
 
         verifiable = True
@@ -42,7 +48,7 @@ class PicrossPuzzle:
 
     def verify_cols(self, solution: np.ndarray) -> bool:
         """
-        Checks if the column restrictions of the puzzle are satisfied
+        Checks if the column restrictions of the puzzle are satisfied.
         """
 
         verifiable = True
@@ -61,7 +67,7 @@ class PicrossPuzzle:
 
     def verify_solution(self, solution: np.ndarray) -> bool:
         """
-        Checks if all the restrictions of the puzzle are satisfied
+        Checks if all the restrictions of the puzzle are satisfied.
         """
 
         return solution is not None \
@@ -74,7 +80,7 @@ class PicrossPuzzle:
 
     def still_works_horiz(self, solution: np.ndarray) -> bool:
         """
-        Checks if the rows could satisfy the restrictions if the empty cells were filled
+        Checks if the rows could satisfy the restrictions if the empty cells were filled.
         """
 
         verifiable = True
@@ -110,7 +116,7 @@ class PicrossPuzzle:
 
     def still_works_vert(self, solution: np.ndarray) -> bool:
         """
-        Checks if the column could satisfy the restrictions if the empty cells were filled
+        Checks if the column could satisfy the restrictions if the empty cells were filled.
         """
 
         verifiable = True
@@ -146,6 +152,10 @@ class PicrossPuzzle:
     
     @staticmethod
     def from_bitmap(bitmap: np.ndarray) -> PicrossPuzzle:
+        """
+        Creates a puzzle from a bitmap or array of boolean values.
+        """
+
         (height, width) = bitmap.shape
         hints = [[],[]]
 
@@ -190,6 +200,10 @@ class PicrossPuzzle:
     
     @staticmethod
     def from_image(path: str) -> PicrossPuzzle:
+        """
+        Creates a puzzle from a black and white image.
+        """
+
         im = ImageOps.grayscale(Image.open(path))
         bitmap = np.asarray(im) != 0
         puzzle_grid = np.invert(bitmap).astype(int)
@@ -197,6 +211,27 @@ class PicrossPuzzle:
     
     @staticmethod
     def from_txt(file_path: str) -> PicrossPuzzle:
+        """
+        Creates a puzzle from a text file.
+
+        The format of the file looks like this:
+        1,1,1;3;3;3,1;1,2
+        2,1;1,2;4;1,1;1,3
+
+        Which represents the following puzzle:
+        x _ x _ x 
+        x x x _ _ 
+        _ _ x x x
+        x x x _ x
+        _ x _ x x 
+
+        The first line indicates the horizontal hints and the second one indicates the vertical
+        hints.
+
+        The hint for each row/column is divided by semicolons (;) and each hint has a collection of
+        lengths separated by commas (,).
+        """
+
         hints = []
 
         with open(file_path, "r") as hint_file:
@@ -212,12 +247,56 @@ class PicrossPuzzle:
                     hints[-1].append(hint)
         
         return PicrossPuzzle(hints)
-        
 
-def display_solution(solution):
-    display_map = {-1:"_ ", 0:"■ ", 1:"□ "}
+display_map = {-1:"_", 0:"◼", 1:"◻"}
+# display_map = {-1:"_", 0:"◻", 1:"◼"}
+# display_map = {-1:"?", 0:"_", 1:"x"}
+# display_map = {-1:"_", 0:"·", 1:"#"}
+# display_map = {-1:"?", 0:"·", 1:"#"}
 
-    for i in solution:
-        for j in i:
-            print(display_map[j], end="")
+def list_lpad(lst, n, fill_val):
+    return ([fill_val]*n + lst)[-n:]
+
+def display_puzzle_solution(puzzle: PicrossPuzzle, solution: np.ndarray):
+    """
+    Displays a solution to a puzzle along with its hints.
+
+    This won't work for very large puzzles or for hints with values higher than 99.
+    """
+
+    h_hints = puzzle.hints[0]
+    h_hints_str = [",".join([str(i) for i in h_hint]) for h_hint in h_hints]
+    max_str_len = max([len(s) for s in h_hints_str])
+    h_hints_str = [s.rjust(2 + max_str_len) for s in h_hints_str]
+
+    # Column hints
+    v_hints = puzzle.hints[1]
+    max_hint_len = max([len(v_hint) for v_hint in v_hints])
+    v_hints_aux = [list_lpad(i, max_hint_len, 0) for i in v_hints]
+    
+    for i in range(max_hint_len):
+        print(" "*(4+max_str_len), end="")
+        for v_hint in v_hints_aux:
+            if v_hint[i] == 0:
+                print("  ", end="")
+            else:
+                print(str(v_hint[i]).rjust(2), end="")
+        print()
+    print()
+    
+    # Row hints and solution matrix
+    for r_idx, row in enumerate(solution):
+        print(h_hints_str[r_idx], end="   ")
+        for cell in row:
+            print(display_map[cell], end=" ")
+        print()
+
+def display_solution(solution: np.ndarray):
+    """
+    Displays the matrix representing a nonogram solution.
+    """
+
+    for row in solution:
+        for cell in row:
+            print(display_map[cell], end=" ")
         print()

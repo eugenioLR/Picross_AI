@@ -43,7 +43,7 @@ def solve_random_backtrack(puzzle: PicrossPuzzle, progress = None, verbose = Fal
 def _random_backtrack_rec(puzzle: PicrossPuzzle, bitmap: np.ndarray, solved_map: np.ndarray,
                         max_y: int, max_x: int, y: int = 0, x: int = 0):
     """
-    Solves the puzzle using a randomized backtracking approach
+    Solves the puzzle using a randomized cell-wise backtracking approach
     changing the value of each cell each step.
     """
 

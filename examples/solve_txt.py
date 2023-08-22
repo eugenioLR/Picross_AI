@@ -37,6 +37,12 @@ def run_solver(puzzle, solver = "partial", boosted = False, transposed = False, 
         time_end = time.process_time()
         time_spent = time_end - time_start
     
+    elif solver == "random_row_backtrack":
+        time_start = time.process_time()
+        solution = solve_rand_row_backtrack(puzzle, progress, verbose=True)
+        time_end = time.process_time()
+        time_spent = time_end - time_start
+    
     elif solver == "partial":
         time_start = time.process_time()
         solution, solvable = iterated_intersections(puzzle, 100)
@@ -49,7 +55,7 @@ def run_solver(puzzle, solver = "partial", boosted = False, transposed = False, 
         puzzle.transpose()
         solution = solution.T
     
-    display_solution(solution)
+    display_puzzle_solution(puzzle, solution)
     
     print(f"Solution verification: {'Ok' if puzzle.verify_solution(solution) else 'Incorrect'}")
     print(f"Hint verification: {'Ok' if puzzle.is_solution(solution) else 'Incorrect'}")
@@ -60,6 +66,7 @@ def main():
         "backtrack",
         "random_backtrack",
         "row_backtrack",
+        "random_row_backtrack",
         "partial"
     ]
 

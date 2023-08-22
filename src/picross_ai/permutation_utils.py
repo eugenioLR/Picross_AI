@@ -1,59 +1,6 @@
 from __future__ import annotations
 import numpy as np
 
-import sys
-sys.setrecursionlimit(100000)
-
-def list_replace(original: List, target: List, value: List) -> List:
-    """
-    Acts exactly the same as the method replace in strings but with lists
-    """
-
-    result = original.copy()
-    i = 0
-    i_result = 0
-    while i <= len(original) - len(target):
-        valid = True
-        j = 0
-        while j < len(target) and valid:
-            valid = original[i+j] == target[j]
-            j += 1
-
-        if valid:
-            result = result[:i_result] + value + result[i_result+len(target):]
-            i += len(target)
-            i_result += len(value)
-        else:
-            i += 1
-            i_result += 1
-    return result
-
-def list_replace_first(original: List, target: List, value: List) -> List:
-    """
-    Acts exactly the same as the method .replace in strings but with lists
-    """
-
-    result = original.copy()
-    i = 0
-    i_result = 0
-    replaced = False
-    while i <= len(original) - len(target) and not replaced:
-        valid = True
-        j = 0
-        while j < len(target) and valid:
-            valid = original[i+j] == target[j]
-            j += 1
-
-        if valid:
-            replaced = True
-            result = result[:i_result] + value + result[i_result+len(target):]
-            i += len(target)
-            i_result += len(value)
-        else:
-            i += 1
-            i_result += 1
-    return result
-
 def partitions_limited_count_rec(n, min_elems, max_elems, solution, part_solution: List = None):
     """
     Recursively generates all the integer parpartitions of `n` that has more than `min_elems` and less than `max_elems`.
@@ -142,7 +89,7 @@ def zero_pad_partitions(partitions, length):
 
 def n_line_perms(width, height, row_hints, progress = None, isHoriz = True):
     """
-    Calculates the number of permutations with generating functions.
+    Calculates the number of valid permutations given a puzzle hint with generating functions.
     """
 
     # m - s = x1 + x2 + ... + xn; xi := size of gap between block i and i-1
@@ -166,7 +113,7 @@ def n_line_perms(width, height, row_hints, progress = None, isHoriz = True):
 
 def line_perms(width, height, line_hints, progress = None, isHoriz = True):
     """
-    Generates the valid permutations that satisfy the line constraints.
+    Generates the valid permutations given a puzzle hint that satisfy the line constraints.
     """
 
     m = width if isHoriz else height
@@ -204,22 +151,13 @@ def line_perms(width, height, line_hints, progress = None, isHoriz = True):
 
     return None
 
-def common_from_perms(perm_gen: Iterator) -> List:
+def common_from_perms(permutations: List) -> List:
     """
     Finds the intersection between each of the permutations provided.
     """
-
-    permutations = list(perm_gen)
-    aux = permutations[0]
-    l = len(aux)
-    finish = False
-    i = 0
-    while i < len(permutations) and not finish:
-        j = 0
-        while j < l:
-            if permutations[i][j] != aux[j]:
-                aux[j] = -1
-            j += 1
-        finish = np.count_nonzero(aux == -1) == len(aux)
-        i += 1
-    return aux
+    
+    perm_arr = np.array(permutations)
+    result = perm_arr[0,:]
+    result[np.any(result != perm_arr, axis=0)] = -1
+    
+    return result

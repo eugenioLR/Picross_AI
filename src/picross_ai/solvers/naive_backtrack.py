@@ -43,7 +43,7 @@ def solve_naive_backtrack(puzzle: PicrossPuzzle, progress = None, verbose = Fals
 def _naive_backtrack_rec(puzzle: PicrossPuzzle, bitmap: np.ndarray, solved_map: np.ndarray,
                         max_y: int, max_x: int, y: int = 0, x: int = 0):
     """
-    Solves the puzzle using a naive backtracking approach
+    Solves the puzzle using a cell-wise backtracking approach
     changing the value of each cell each step.
     """
 
